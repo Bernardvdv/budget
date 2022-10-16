@@ -4,7 +4,7 @@ services:
 
   web:
     # the application's web service (container) will use an image based on our Dockerfile
-    build: "."budget_project
+    build: "."
     # map the internal port 80 to port 8000 on the host
     ports:
       - "8000:80"
