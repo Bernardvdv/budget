@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 
 def index(request):
@@ -6,5 +6,6 @@ def index(request):
 
 
 def home(request):
-    print(request.user)
-    return render(request, "budget/main.html", {})
+    if request.user.is_authenticated:
+        return render(request, "budget/main.html", {})
+    return redirect("/")
