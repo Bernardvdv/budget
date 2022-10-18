@@ -46,7 +46,7 @@ class HomePageView(TemplateView):
         context['income_sum_year'] = total_income_year['income_year__sum']
         context['income_sum_month'] = total_income_month['income_month__sum']
         context['top_five_payments'] = top_five_payments
-        context['expenses_chart'] = json.dumps(test)
+        context['calculated_categories'] = calculated_categories
         return context
 
     def get_total_year(self):
@@ -62,8 +62,16 @@ class HomePageView(TemplateView):
         return top_records
 
     def get_calculated_categories(self):
+        grouped = {}
         total_monthly_income = self.get_total_month()
         categories = Items.objects.filter().values_list('value', 'category')
-        print(categories)
 
-
+        for x, y in categories:
+            x = float(x)
+            if y in grouped:
+                grouped[y] += x
+            else:
+                grouped[y] = x
+        for x, y in grouped.items():
+            grouped[x] = (y / total_monthly_income['income_month__sum']) * 100
+        return grouped
