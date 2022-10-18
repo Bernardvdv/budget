@@ -1,12 +1,13 @@
 import json
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.views.generic import TemplateView, View
 from django.contrib.auth import login, authenticate
 from django.db.models import Sum
+from django.http import JsonResponse
 
 from .forms import LoginForm
-from .models import Items, Income, BaseConfig
+from .models import Items, Income, BaseConfig, Period, UserSettings
 
 
 class LoginPageView(View):
@@ -38,15 +39,19 @@ class HomePageView(TemplateView):
         context = super().get_context_data(**kwargs)
         total_income_year = self.get_total_year()
         total_income_month = self.get_total_month()
-        top_five_payments = self.top_five_payments()
-        calculated_categories = self.get_calculated_categories()
-        test = [0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200]
+        top_five_payments = self.top_five_payments(self.request.GET.get('month', 1))
+        calculated_categories = self.get_calculated_categories(self.request.GET.get('month', 1))
+        months = self.get_months()
+        selected_month = self.get_selected_month(self.request.GET.get('month', 1))
         context['income'] = Income.objects.all()
         context['currency'] = BaseConfig.objects.all()
         context['income_sum_year'] = total_income_year['income_year__sum']
         context['income_sum_month'] = total_income_month['income_month__sum']
         context['top_five_payments'] = top_five_payments
         context['calculated_categories'] = calculated_categories
+        context['all_months'] = months
+        context['selected_month'] = selected_month
+        context['select_month_id'] = self.request.GET.get('month', 1)
         return context
 
     def get_total_year(self):
@@ -57,15 +62,14 @@ class HomePageView(TemplateView):
         total_income = Income.objects.aggregate(Sum('income_month'))
         return total_income
 
-    def top_five_payments(self):
-        top_records = Items.objects.filter().order_by('value')[:5]
+    def top_five_payments(self, pk):
+        top_records = Items.objects.filter(month__pk=pk).order_by('value')[:5]
         return top_records
 
-    def get_calculated_categories(self):
+    def get_calculated_categories(self, pk):
         grouped = {}
         total_monthly_income = self.get_total_month()
-        categories = Items.objects.filter().values_list('value', 'category')
-
+        categories = Items.objects.filter(month=pk).values_list('value', 'category')
         for x, y in categories:
             x = float(x)
             if y in grouped:
@@ -75,3 +79,89 @@ class HomePageView(TemplateView):
         for x, y in grouped.items():
             grouped[x] = (y / total_monthly_income['income_month__sum']) * 100
         return grouped
+
+    def get_months(self):
+        months = Period.objects.all()
+        return months
+
+    def get_selected_month(self, pk):
+        if pk:
+            selected_month = Period.objects.get(pk=pk)
+            return selected_month
+        # FIXME: Return something better here if pk does not exist as a get parameter
+        return
+
+    def post(self, request, *args, **kwargs):
+        UserSettings.objects.create(month=request.POST['month'])
+        return redirect(f'/home?month={request.POST["month"]}')
+
+    def ajax_get_expenses(request):
+        expenses = Items.objects.filter().values_list('month', 'value')
+        # print(expenses)
+        grouped = {}
+        for x, y in expenses:
+            x = x
+            if y in grouped:
+                grouped[y] += x
+            else:
+                grouped[y] = x
+        data = {
+            'expenses': [0, 200]
+        }
+        return JsonResponse(data)
+
+    def get_refenue_source(request):
+        refenue_source = Income.objects.filter().values_list('income_month', 'person')
+        ref = []
+        person = []
+        for x, y in refenue_source:
+            ref.append(x)
+            person.append(y)
+        data = {
+            'refenue_source': ref,
+            'label': person,
+        }
+        return JsonResponse(data)
+
+
+class BreakdownPageView(TemplateView):
+    template_name = 'budget/breakdown.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # total_income_year = self.get_total_year()
+        # total_income_month = self.get_total_month()
+        # top_five_payments = self.top_five_payments(self.request.GET.get('month'))
+        # calculated_categories = self.get_calculated_categories(self.request.GET.get('month'))
+        months = self.get_months()
+        selected_month = self.get_selected_month(self.request.GET.get('month', 1))
+        expenses = self.get_expenses(self.request.GET.get('month', 1))
+        # context['income'] = Income.objects.all()
+        context['currency'] = BaseConfig.objects.all()
+        # context['income_sum_year'] = total_income_year['income_year__sum']
+        # context['income_sum_month'] = total_income_month['income_month__sum']
+        # context['top_five_payments'] = top_five_payments
+        # context['calculated_categories'] = calculated_categories
+        context['all_months'] = months
+        context['selected_month'] = selected_month
+        context['expenses'] = expenses
+        return context
+
+    def get_selected_month(self, pk):
+        if pk:
+            selected_month = Period.objects.get(pk=pk)
+            return selected_month
+        # FIXME: Return something better here if pk does not exist as a get parameter
+        return
+
+    def get_months(self):
+        months = Period.objects.all()
+        return months
+
+    def get_expenses(self, pk):
+        records = Items.objects.filter(month__pk=pk).order_by('value')
+        return records
+
+    def post(self, request, *args, **kwargs):
+        UserSettings.objects.create(month=request.POST['month'])
+        return redirect(f'/breakdown?month={request.POST["month"]}')
