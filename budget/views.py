@@ -137,6 +137,11 @@ class BreakdownPageView(TemplateView):
         return context
 
     def get_expenses(self, pk):
+        """
+        Get all expenses for the current period
+        :param pk:
+        :return:
+        """
         records = Items.objects.filter(month__pk=pk).order_by('value')
         return records
 
