@@ -12,6 +12,4 @@ urlpatterns = [
          name="ajax_get_expenses"),
     path('get_revenue_source/', views.HomePageView.get_revenue_source,
          name="get_revenue_source"),
-
-
 ]

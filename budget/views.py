@@ -28,7 +28,8 @@ class LoginPageView(View):
                 login(request, user)
                 return redirect('home')
         message = 'Login failed!'
-        return render(request, self.template_name, context={'form': form, 'message': message})
+        return render(request, self.template_name, context={'form': form,
+                                                            'message': message})
 
 
 def get_total_year():
@@ -70,7 +71,8 @@ class HomePageView(TemplateView):
     def get_calculated_categories(self, pk):
         grouped = {}
         total_monthly_income = self.get_total_month()
-        categories = Items.objects.filter(month=pk).values_list('value', 'category')
+        categories = Items.objects.filter(month=pk).\
+            values_list('value', 'category')
         for x, y in categories:
             x = float(x)
             if y in grouped:
@@ -102,7 +104,8 @@ class HomePageView(TemplateView):
         return JsonResponse(data)
 
     def get_revenue_source(request):
-        refenue_source = Income.objects.filter().values_list('income_month', 'person')
+        refenue_source = Income.objects.filter().\
+            values_list('income_month', 'person')
         ref = []
         person = []
         for x, y in refenue_source:
@@ -136,7 +139,8 @@ class BreakdownPageView(TemplateView):
         :param pk:
         :return:
         """
-        records = Items.objects.filter(month__pk=pk).order_by('value')
+        records = Items.objects.filter(month__pk=pk).\
+            order_by('value')
         return records
 
     def post(self, request, *args, **kwargs):
