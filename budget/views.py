@@ -1,18 +1,12 @@
-import json
-
-from django.shortcuts import render, redirect, reverse
-from django.views.generic import TemplateView, View
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate, login
 from django.db.models import Sum
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.views.generic import TemplateView, View
 
-from .helpers import (
-    get_selected_month,
-    get_months,
-    get_month_param,
-)
 from .forms import LoginForm
-from .models import Items, Income, BaseConfig, Period, UserSettings
+from .helpers import get_month_param, get_months, get_selected_month
+from .models import BaseConfig, Income, Items, UserSettings
 
 
 class LoginPageView(View):
@@ -34,7 +28,8 @@ class LoginPageView(View):
                 login(request, user)
                 return redirect('home')
         message = 'Login failed!'
-        return render(request, self.template_name, context={'form': form, 'message': message})
+        return render(request, self.template_name,
+                      context={'form': form, 'message': message})
 
 
 def get_total_year():
@@ -76,7 +71,8 @@ class HomePageView(TemplateView):
     def get_calculated_categories(self, pk):
         grouped = {}
         total_monthly_income = self.get_total_month()
-        categories = Items.objects.filter(month=pk).values_list('value', 'category')
+        categories = Items.objects.filter(month=pk).\
+            values_list('value', 'category')
         for x, y in categories:
             x = float(x)
             if y in grouped:
@@ -90,7 +86,7 @@ class HomePageView(TemplateView):
     def post(self, request, *args, **kwargs):
         if len(request.POST['month']) > 5:
             UserSettings.objects.create(month=request.POST['month'])
-            return redirect(f'/home')
+            return redirect('/home')
         return redirect(f'/home?month={request.POST["month"]}')
 
     def ajax_get_expenses(request):
@@ -107,8 +103,9 @@ class HomePageView(TemplateView):
         }
         return JsonResponse(data)
 
-    def get_refenue_source(request):
-        refenue_source = Income.objects.filter().values_list('income_month', 'person')
+    def get_revenue_source(request):
+        refenue_source = Income.objects.filter().\
+            values_list('income_month', 'person')
         ref = []
         person = []
         for x, y in refenue_source:
@@ -137,11 +134,17 @@ class BreakdownPageView(TemplateView):
         return context
 
     def get_expenses(self, pk):
-        records = Items.objects.filter(month__pk=pk).order_by('value')
+        """
+        Get all expenses for the current period
+        :param pk:
+        :return:
+        """
+        records = Items.objects.filter(month__pk=pk).\
+            order_by('value')
         return records
 
     def post(self, request, *args, **kwargs):
         if len(request.POST['month']) > 5:
-            return redirect(f'/breakdown')
+            return redirect('/breakdown')
         UserSettings.objects.create(month=request.POST['month'])
         return redirect(f'/breakdown?month={request.POST["month"]}')

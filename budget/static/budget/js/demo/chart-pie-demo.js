@@ -2,7 +2,7 @@
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#858796';
 
-const REFENUE_URL = '/get_refenue_source/'
+const REFENUE_URL = '/get_revenue_source/'
 let refenue_source;
 let refenue_labels;
 fetch(REFENUE_URL)

@@ -49,7 +49,8 @@ class Items(models.Model):
     month = models.ForeignKey(Period, on_delete=models.CASCADE)
     name = models.CharField(max_length=180, unique=True)
     value = models.CharField(max_length=20)
-    category = models.CharField(max_length=20, choices=CATEGORIES, default=DEFAULT)
+    category = models.CharField(max_length=20, choices=CATEGORIES,
+                                default=DEFAULT)
     payment_date = models.DateField()
     person = models.CharField(max_length=20, choices=PERSON)
 
