@@ -1,5 +1,5 @@
 {% extends 'budget/base.html' %}
-
+{% load check_month %}
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
@@ -74,7 +74,7 @@
                         {% csrf_token %}
                         <div class="input-group">
                             <select class="form-control bg-light border-0 small" name='month' aria-label="Default select example">
-                              <option selected>{{selected_month}}</option>
+                              <option selected>{{selected_month|check_month}}</option>
                                 {% for x in all_months %}
                                     <option value="{{ x.pk }}">{{ x.month }}</option>
                                 {% endfor %}
