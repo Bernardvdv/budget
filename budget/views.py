@@ -37,12 +37,13 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        month_param = self.get_month_param()
         total_income_year = self.get_total_year()
         total_income_month = self.get_total_month()
-        top_five_payments = self.top_five_payments(self.request.GET.get('month', 1))
-        calculated_categories = self.get_calculated_categories(self.request.GET.get('month', 1))
+        top_five_payments = self.top_five_payments(month_param)
+        calculated_categories = self.get_calculated_categories(month_param)
         months = self.get_months()
-        selected_month = self.get_selected_month(self.request.GET.get('month', 1))
+        selected_month = self.get_selected_month(month_param)
         context['income'] = Income.objects.all()
         context['currency'] = BaseConfig.objects.all()
         context['income_sum_year'] = total_income_year['income_year__sum']
@@ -51,7 +52,7 @@ class HomePageView(TemplateView):
         context['calculated_categories'] = calculated_categories
         context['all_months'] = months
         context['selected_month'] = selected_month
-        context['select_month_id'] = self.request.GET.get('month', 1)
+        context['select_month_id'] = month_param
         return context
 
     def get_total_year(self):
@@ -85,19 +86,21 @@ class HomePageView(TemplateView):
         return months
 
     def get_selected_month(self, pk):
-        if pk:
+        count_months = Period.objects.all()
+        if count_months and pk is not None:
             selected_month = Period.objects.get(pk=pk)
             return selected_month
         # FIXME: Return something better here if pk does not exist as a get parameter
         return
 
     def post(self, request, *args, **kwargs):
-        UserSettings.objects.create(month=request.POST['month'])
+        if len(request.POST['month']) > 5:
+            UserSettings.objects.create(month=request.POST['month'])
+            return redirect(f'/home')
         return redirect(f'/home?month={request.POST["month"]}')
 
     def ajax_get_expenses(request):
         expenses = Items.objects.filter().values_list('month', 'value')
-        # print(expenses)
         grouped = {}
         for x, y in expenses:
             x = x
@@ -123,36 +126,29 @@ class HomePageView(TemplateView):
         }
         return JsonResponse(data)
 
+    def get_month_param(self):
+        month_id = self.request.GET.get('month')
+        return month_id
+
 
 class BreakdownPageView(TemplateView):
     template_name = 'budget/breakdown.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # total_income_year = self.get_total_year()
-        # total_income_month = self.get_total_month()
-        # top_five_payments = self.top_five_payments(self.request.GET.get('month'))
-        # calculated_categories = self.get_calculated_categories(self.request.GET.get('month'))
         months = self.get_months()
-        selected_month = self.get_selected_month(self.request.GET.get('month', 1))
-        expenses = self.get_expenses(self.request.GET.get('month', 1))
-        # context['income'] = Income.objects.all()
+        month_id = self.get_month_param()
+        selected_month = self.get_selected_month(month_id)
+        expenses = self.get_expenses(month_id)
         context['currency'] = BaseConfig.objects.all()
-        # context['income_sum_year'] = total_income_year['income_year__sum']
-        # context['income_sum_month'] = total_income_month['income_month__sum']
-        # context['top_five_payments'] = top_five_payments
-        # context['calculated_categories'] = calculated_categories
         context['all_months'] = months
         context['selected_month'] = selected_month
         context['expenses'] = expenses
         return context
 
     def get_selected_month(self, pk):
-        if pk:
-            selected_month = Period.objects.get(pk=pk)
-            return selected_month
-        # FIXME: Return something better here if pk does not exist as a get parameter
-        return
+        selected_month = Period.objects.filter(pk=pk).first()
+        return selected_month
 
     def get_months(self):
         months = Period.objects.all()
@@ -163,5 +159,11 @@ class BreakdownPageView(TemplateView):
         return records
 
     def post(self, request, *args, **kwargs):
+        if len(request.POST['month']) > 5:
+            return redirect(f'/breakdown')
         UserSettings.objects.create(month=request.POST['month'])
         return redirect(f'/breakdown?month={request.POST["month"]}')
+
+    def get_month_param(self):
+        month_id = self.request.GET.get('month')
+        return month_id
