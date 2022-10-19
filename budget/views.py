@@ -6,6 +6,11 @@ from django.contrib.auth import login, authenticate
 from django.db.models import Sum
 from django.http import JsonResponse
 
+from .helpers import (
+    get_selected_month,
+    get_months,
+    get_month_param,
+)
 from .forms import LoginForm
 from .models import Items, Income, BaseConfig, Period, UserSettings
 
@@ -32,18 +37,23 @@ class LoginPageView(View):
         return render(request, self.template_name, context={'form': form, 'message': message})
 
 
+def get_total_year():
+    total_income = Income.objects.aggregate(Sum('income_year'))
+    return total_income
+
+
 class HomePageView(TemplateView):
     template_name = 'budget/main.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        month_param = self.get_month_param()
-        total_income_year = self.get_total_year()
+        month_param = get_month_param(self.request)
+        total_income_year = get_total_year()
         total_income_month = self.get_total_month()
         top_five_payments = self.top_five_payments(month_param)
         calculated_categories = self.get_calculated_categories(month_param)
-        months = self.get_months()
-        selected_month = self.get_selected_month(month_param)
+        months = get_months()
+        selected_month = get_selected_month(month_param)
         context['income'] = Income.objects.all()
         context['currency'] = BaseConfig.objects.all()
         context['income_sum_year'] = total_income_year['income_year__sum']
@@ -54,10 +64,6 @@ class HomePageView(TemplateView):
         context['selected_month'] = selected_month
         context['select_month_id'] = month_param
         return context
-
-    def get_total_year(self):
-        total_income = Income.objects.aggregate(Sum('income_year'))
-        return total_income
 
     def get_total_month(self):
         total_income = Income.objects.aggregate(Sum('income_month'))
@@ -80,18 +86,6 @@ class HomePageView(TemplateView):
         for x, y in grouped.items():
             grouped[x] = (y / total_monthly_income['income_month__sum']) * 100
         return grouped
-
-    def get_months(self):
-        months = Period.objects.all()
-        return months
-
-    def get_selected_month(self, pk):
-        count_months = Period.objects.all()
-        if count_months and pk is not None:
-            selected_month = Period.objects.get(pk=pk)
-            return selected_month
-        # FIXME: Return something better here if pk does not exist as a get parameter
-        return
 
     def post(self, request, *args, **kwargs):
         if len(request.POST['month']) > 5:
@@ -126,33 +120,21 @@ class HomePageView(TemplateView):
         }
         return JsonResponse(data)
 
-    def get_month_param(self):
-        month_id = self.request.GET.get('month')
-        return month_id
-
 
 class BreakdownPageView(TemplateView):
     template_name = 'budget/breakdown.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        months = self.get_months()
-        month_id = self.get_month_param()
-        selected_month = self.get_selected_month(month_id)
+        months = get_months()
+        month_id = get_month_param(self.request)
+        selected_month = get_selected_month(month_id)
         expenses = self.get_expenses(month_id)
         context['currency'] = BaseConfig.objects.all()
         context['all_months'] = months
         context['selected_month'] = selected_month
         context['expenses'] = expenses
         return context
-
-    def get_selected_month(self, pk):
-        selected_month = Period.objects.filter(pk=pk).first()
-        return selected_month
-
-    def get_months(self):
-        months = Period.objects.all()
-        return months
 
     def get_expenses(self, pk):
         records = Items.objects.filter(month__pk=pk).order_by('value')
@@ -163,7 +145,3 @@ class BreakdownPageView(TemplateView):
             return redirect(f'/breakdown')
         UserSettings.objects.create(month=request.POST['month'])
         return redirect(f'/breakdown?month={request.POST["month"]}')
-
-    def get_month_param(self):
-        month_id = self.request.GET.get('month')
-        return month_id
