@@ -1,21 +1,12 @@
-from django.shortcuts import redirect, render
-from django.views.generic import TemplateView, View
 from django.contrib.auth import authenticate, login
 from django.db.models import Sum
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.views.generic import TemplateView, View
+from .helpers import get_month_param, get_months, get_selected_month
+from .models import BaseConfig, Income, Items, UserSettings
 
-from .helpers import (
-    get_selected_month,
-    get_months,
-    get_month_param,
-)
 from .forms import LoginForm
-from .models import (
-    BaseConfig,
-    Income,
-    Items,
-    UserSettings,
-)
 
 
 class LoginPageView(View):

@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import Items, Income, BaseConfig, Period
+from .models import (
+    BaseConfig,
+    Income,
+    Items,
+    Period,
+)
 
 
 class ItemsAdmin(admin.ModelAdmin):
