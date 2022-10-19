@@ -1,8 +1,6 @@
-import json
-
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, View
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate, login
 from django.db.models import Sum
 from django.http import JsonResponse
 
@@ -12,7 +10,12 @@ from .helpers import (
     get_month_param,
 )
 from .forms import LoginForm
-from .models import Items, Income, BaseConfig, Period, UserSettings
+from .models import (
+    BaseConfig,
+    Income,
+    Items,
+    UserSettings,
+)
 
 
 class LoginPageView(View):
@@ -90,7 +93,7 @@ class HomePageView(TemplateView):
     def post(self, request, *args, **kwargs):
         if len(request.POST['month']) > 5:
             UserSettings.objects.create(month=request.POST['month'])
-            return redirect(f'/home')
+            return redirect('/home')
         return redirect(f'/home?month={request.POST["month"]}')
 
     def ajax_get_expenses(request):
@@ -107,7 +110,7 @@ class HomePageView(TemplateView):
         }
         return JsonResponse(data)
 
-    def get_refenue_source(request):
+    def get_revenue_source(request):
         refenue_source = Income.objects.filter().values_list('income_month', 'person')
         ref = []
         person = []
