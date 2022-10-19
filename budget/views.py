@@ -28,8 +28,8 @@ class LoginPageView(View):
                 login(request, user)
                 return redirect('home')
         message = 'Login failed!'
-        return render(request, self.template_name, context={'form': form,
-                                                            'message': message})
+        return render(request, self.template_name,
+                      context={'form': form, 'message': message})
 
 
 def get_total_year():
@@ -145,6 +145,6 @@ class BreakdownPageView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         if len(request.POST['month']) > 5:
-            return redirect(f'/breakdown')
+            return redirect('/breakdown')
         UserSettings.objects.create(month=request.POST['month'])
         return redirect(f'/breakdown?month={request.POST["month"]}')
