@@ -31,19 +31,13 @@ class LoginPageView(View):
         return render(request, self.template_name,
                       context={'form': form, 'message': message})
 
-
-def get_total_year():
-    total_income = Income.objects.aggregate(Sum('income_year'))
-    return total_income
-
-
 class HomePageView(TemplateView):
     template_name = 'budget/main.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         month_param = get_month_param(self.request)
-        total_income_year = get_total_year()
+        total_income_year = self.get_total_year()
         total_income_month = self.get_total_month()
         top_five_payments = self.top_five_payments(month_param)
         calculated_categories = self.get_calculated_categories(month_param)
@@ -51,8 +45,10 @@ class HomePageView(TemplateView):
         selected_month = get_selected_month(month_param)
         context['income'] = Income.objects.all()
         context['currency'] = BaseConfig.objects.all()
-        context['income_sum_year'] = total_income_year['income_year__sum']
-        context['income_sum_month'] = total_income_month['income_month__sum']
+        # context['income_sum_year'] = total_income_year['income_year__sum']
+        context['income_sum_year'] = 1000
+        # context['income_sum_month'] = total_income_month['income_month__sum']
+        context['income_sum_month'] = 22
         context['top_five_payments'] = top_five_payments
         context['calculated_categories'] = calculated_categories
         context['all_months'] = months
@@ -61,8 +57,9 @@ class HomePageView(TemplateView):
         return context
 
     def get_total_month(self):
-        total_income = Income.objects.aggregate(Sum('income_month'))
-        return total_income
+        # FIXME: Sum is an issue with postgres
+        # total_income = Income.objects.aggregate(Sum('income_month'))
+        return 100
 
     def top_five_payments(self, pk):
         top_records = Items.objects.filter(month__pk=pk).order_by('value')[:5]
@@ -116,6 +113,11 @@ class HomePageView(TemplateView):
             'label': person,
         }
         return JsonResponse(data)
+
+    def get_total_year(self):
+        # FIXME: Sum is an issue with postgres
+        # total_income = Income.objects.aggregate(Sum('income_year'))
+        return 100
 
 
 class BreakdownPageView(TemplateView):
