@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+import dj_database_url
 import os
 from pathlib import Path
 
@@ -75,12 +76,11 @@ WSGI_APPLICATION = 'budget_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Configure database using DATABASE_URL; fall back to sqlite in memory when no
+# environment variable is available, e.g. during Docker build
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite://:memory:')
+
+DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 
 
 # Password validation
