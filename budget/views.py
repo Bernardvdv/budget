@@ -46,10 +46,8 @@ class HomePageView(TemplateView):
         selected_month = get_selected_month(month_param)
         context['income'] = Income.objects.all()
         context['currency'] = BaseConfig.objects.all()
-        # context['income_sum_year'] = total_income_year['income_year__sum']
-        context['income_sum_year'] = 1000
-        # context['income_sum_month'] = total_income_month['income_month__sum']
-        context['income_sum_month'] = 100
+        context['income_sum_year'] = total_income_year['income_year__sum']
+        context['income_sum_month'] = total_income_month['income_month__sum']
         context['top_five_payments'] = top_five_payments
         context['calculated_categories'] = calculated_categories
         context['all_months'] = months
@@ -58,9 +56,8 @@ class HomePageView(TemplateView):
         return context
 
     def get_total_month(self):
-        # FIXME: Fix this
-        # total_income = Income.objects.aggregate(Sum('income_month'))
-        return 100
+        total_income = Income.objects.aggregate(Sum('income_month'))
+        return total_income
 
     def top_five_payments(self, pk):
         top_records = Items.objects.filter(month__pk=pk).order_by('value')[:5]
@@ -102,11 +99,11 @@ class HomePageView(TemplateView):
         return JsonResponse(data)
 
     def get_revenue_source(request):
-        refenue_source = Income.objects.filter().\
+        revenue_source = Income.objects.filter().\
             values_list('income_month', 'person')
         ref = []
         person = []
-        for x, y in refenue_source:
+        for x, y in revenue_source:
             ref.append(x)
             person.append(y)
         data = {
@@ -116,8 +113,8 @@ class HomePageView(TemplateView):
         return JsonResponse(data)
 
     def get_total_year(self):
-        # total_income = Income.objects.aggregate(Sum('income_year'))
-        return 100
+        total_income = Income.objects.aggregate(Sum('income_year'))
+        return total_income
 
 
 class BreakdownPageView(TemplateView):
