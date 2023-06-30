@@ -80,7 +80,7 @@
                             <select class="form-control bg-light border-0 small" name='month' aria-label="Default select example">
                               <option selected>{{selected_month|check_month}}</option>
                                 {% for x in all_months %}
-                                    <option value="{{ x.pk }}">{{ x.month }}</option>
+                                    <option value="{{ x.pk }}">{{ x }}</option>
                                 {% endfor %}
                             </select>
                             <div class="input-group-append">
@@ -241,7 +241,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{request.user}}</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{request.user|title}}</span>
                                 <img class="img-profile rounded-circle"
                                     src="/static/budget/img/undraw_profile.svg">
                             </a>
@@ -286,24 +286,24 @@
                     <!-- Content Row -->
                     <div class="row">
 
-                        {% for x in income %}
-                        <div class="col-xl-2 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Earnings {{x.person}} Yearly </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{currency.first.currency}}{{x.income_year}}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+<!--                        {% for x in income %}-->
+<!--                        <div class="col-xl-2 col-md-6 mb-4">-->
+<!--                            <div class="card border-left-primary shadow h-100 py-2">-->
+<!--                                <div class="card-body">-->
+<!--                                    <div class="row no-gutters align-items-center">-->
+<!--                                        <div class="col mr-2">-->
+<!--                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">-->
+<!--                                                Earnings {{x.person}} Yearly </div>-->
+<!--                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{currency.first.currency}}{{x.income_year}}</div>-->
+<!--                                        </div>-->
+<!--                                        <div class="col-auto">-->
+<!--                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        {% endfor %}-->
 
                         <!-- Earnings (Monthly) Card Example -->
                         <div class="col-xl-2 col-md-6 mb-4">
@@ -312,7 +312,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Earnings Total</div>
+                                                Annual Income</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ currency.first.currency }} {{ income_sum_year }} </div>
                                         </div>
                                         <div class="col-auto">
@@ -353,6 +353,22 @@
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                                 Earning Total Monthly</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ currency.first.currency }} {{ income_sum_month }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-6 mb-4">
+                            <div class="card border-left-danger shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                Total Monthly Expenses</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ currency.first.currency }} {{ total_month_expenses }}</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-comments fa-2x text-gray-300"></i>

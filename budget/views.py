@@ -6,7 +6,7 @@ from django.views.generic import TemplateView, View
 
 from .forms import LoginForm
 from .helpers import get_month_param, get_months, get_selected_month
-from .models import BaseConfig, Income, Items, UserSettings
+from .models import BaseConfig, Income, Items, UserSettings, Period, Category
 
 
 class LoginPageView(View):
@@ -42,6 +42,7 @@ class HomePageView(TemplateView):
         total_income_month = self.get_total_month()
         top_five_payments = self.top_five_payments(month_param)
         calculated_categories = self.get_calculated_categories(month_param)
+        total_month_expenses = self.get_total_month_expenses(month_param)
         months = get_months()
         selected_month = get_selected_month(month_param)
         context['income'] = Income.objects.all()
@@ -53,7 +54,13 @@ class HomePageView(TemplateView):
         context['all_months'] = months
         context['selected_month'] = selected_month
         context['select_month_id'] = month_param
+        context["total_month_expenses"] = total_month_expenses
         return context
+
+    def get_total_month_expenses(self, pk):
+        results = Items.objects.filter(month=pk).values_list('value')
+        expenses = round(sum([float(item[0]) for item in results]), 2)
+        return expenses
 
     def get_total_month(self):
         total_income = Income.objects.aggregate(Sum('income_month'))
@@ -70,6 +77,7 @@ class HomePageView(TemplateView):
             values_list('value', 'category')
         for x, y in categories:
             x = float(x)
+            y = Category.objects.get(id=y)
             if y in grouped:
                 grouped[y] += x
             else:
@@ -85,16 +93,20 @@ class HomePageView(TemplateView):
         return redirect(f'/home?month={request.POST["month"]}')
 
     def ajax_get_expenses(request):
-        expenses = Items.objects.filter().values_list('month', 'value')
-        grouped = {}
-        for x, y in expenses:
-            x = x
-            if y in grouped:
-                grouped[y] += x
-            else:
-                grouped[y] = x
+        id_value = request.GET.get('id')
+        selected_month = Period.objects.get(name=id_value)
+        expenses = Items.objects.filter(month=selected_month).values_list('name', 'value')
+        labels = []
+        values = []
+
+        for item in expenses:
+            label, value = item
+            labels.append(label)
+            values.append(float(value))
+
         data = {
-            'expenses': [0, 200]
+            'labels': labels,
+            'values': values,
         }
         return JsonResponse(data)
 

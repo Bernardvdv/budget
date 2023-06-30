@@ -76,7 +76,7 @@
                             <select class="form-control bg-light border-0 small" name='month' aria-label="Default select example">
                               <option selected>{{selected_month|check_month}}</option>
                                 {% for x in all_months %}
-                                    <option value="{{ x.pk }}">{{ x.month }}</option>
+                                    <option value="{{ x.pk }}">{{ x }}</option>
                                 {% endfor %}
                             </select>
                             <div class="input-group-append">
@@ -237,7 +237,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{request.user}}</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{request.user|title}}</span>
                                 <img class="img-profile rounded-circle"
                                     src="/static/budget/img/undraw_profile.svg">
                             </a>

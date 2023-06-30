@@ -27,25 +27,21 @@ function number_format(number, decimals, dec_point, thousands_sep) {
   return s.join(dec);
 }
 
-
-const URL = '/ajax_get_expenses/'
+var month_id = $('select[name="month"]').val();
+const URL = '/ajax_get_expenses/?id=' + month_id
 let expenses
 fetch(URL)
 .then(function (response) {
     return response.json();
 })
 .then(function (data) {
-    // console.log(data);
-    expenses = data['expenses']
-
-    // Area Chart Example
     var ctx = document.getElementById("myAreaChart");
     var myLineChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        labels: data.labels,
         datasets: [{
-          label: "Earnings",
+          label: "Expenses",
           lineTension: 0.3,
           backgroundColor: "rgba(78, 115, 223, 0.05)",
           borderColor: "rgba(78, 115, 223, 1)",
@@ -57,7 +53,7 @@ fetch(URL)
           pointHoverBorderColor: "rgba(78, 115, 223, 1)",
           pointHitRadius: 10,
           pointBorderWidth: 2,
-          data: expenses,
+          data: data.values,
         }],
       },
       options: {
@@ -87,9 +83,8 @@ fetch(URL)
             ticks: {
               maxTicksLimit: 5,
               padding: 10,
-              // Include a dollar sign in the ticks
               callback: function(value, index, values) {
-                return '$' + number_format(value);
+                return '£' + number_format(value);
               }
             },
             gridLines: {
@@ -121,7 +116,7 @@ fetch(URL)
           callbacks: {
             label: function(tooltipItem, chart) {
               var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-              return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+              return datasetLabel + ': £' + number_format(tooltipItem.yLabel);
             }
           }
         }

@@ -11,9 +11,8 @@ def get_selected_month(pk):
     if count_months and pk is not None:
         selected_month = Period.objects.get(pk=pk)
         return selected_month
-    # FIXME: Return something better here if pk
-    #  does not exist as a get parameter
-    return
+    else:
+        return Period.objects.last()
 
 
 def get_months():
